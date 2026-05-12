@@ -79,6 +79,10 @@ type OnchainLookupState =
 
 const ZERO_BYTES20 =
   "0x0000000000000000000000000000000000000000" as const;
+const SAMPLE_REPO_URL =
+  "https://github.com/NomicFoundation/solx";
+const SAMPLE_COMMIT_HASH =
+  "f0f73f9e8bda8aaf6ead699672ac41167c42c490";
 
 function normalizeGitHubRepoUrl(input: string): RepositoryParts {
   const trimmed = input.trim().replace(/\.git$/i, "");
@@ -261,6 +265,20 @@ export default function Index() {
       blockNumber: receipt.blockNumber?.toString(),
     });
   }, [receipt]);
+
+  function handleFillSample() {
+    setError(null);
+    setNotice(null);
+    setCurrentRecord(null);
+    setSubmittedHash(null);
+    setOnchainLookup({
+      status: "idle",
+      proof: null,
+      message: null,
+    });
+    setRepoUrlInput(SAMPLE_REPO_URL);
+    setCommitHashInput(SAMPLE_COMMIT_HASH);
+  }
 
   async function handleGenerate() {
     setError(null);
@@ -600,7 +618,7 @@ export default function Index() {
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="GitHub repo URL, e.g. https://github.com/NomicFoundation/solx"
+            placeholder={`GitHub repo URL, e.g. ${SAMPLE_REPO_URL}`}
             placeholderTextColor="#9CA3AF"
             style={styles.input}
             value={repoUrlInput}
@@ -610,7 +628,7 @@ export default function Index() {
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="Commit hash, e.g. f0f73f9e8bda8aaf6ead699672ac41167c42c490"
+            placeholder={`Commit hash, e.g. ${SAMPLE_COMMIT_HASH}`}
             placeholderTextColor="#9CA3AF"
             style={styles.input}
             value={commitHashInput}
@@ -623,8 +641,18 @@ export default function Index() {
               pressed && styles.pressed,
             ]}
             onPress={handleGenerate}
-            >
+          >
             <Text style={styles.buttonText}>Validate hash / Generate link</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.sampleButton,
+              pressed && styles.pressed,
+            ]}
+            onPress={handleFillSample}
+          >
+            <Text style={styles.sampleButtonText}>Fill sample repo</Text>
           </Pressable>
 
           {!!error && <Text style={styles.errorText}>{error}</Text>}
@@ -633,65 +661,6 @@ export default function Index() {
 
         {currentRecord ? (
           <View style={styles.resultGrid}>
-            <View style={styles.panel}>
-              <Text style={styles.panelTitle}>Preview</Text>
-              <Text style={styles.panelText}>
-                The GitHub URL is for display only. The actual anchor that goes into the contract should be the commit hash.
-              </Text>
-
-              <View style={styles.detailBlock}>
-                <Text style={styles.detailLabel}>GitHub URL with hash</Text>
-                <Pressable onPress={() => Linking.openURL(currentRecord.treeUrl)}>
-                  <Text style={styles.linkText}>{currentRecord.treeUrl}</Text>
-                </Pressable>
-
-                <Text style={styles.detailLabel}>git clone command</Text>
-                <Text style={styles.codeBlock}>{currentRecord.cloneCommand}</Text>
-
-                <Text style={styles.detailLabel}>ZIP download link</Text>
-                <Pressable onPress={() => Linking.openURL(currentRecord.zipUrl)}>
-                  <Text style={styles.linkText}>{currentRecord.zipUrl}</Text>
-                </Pressable>
-
-                <Text style={styles.detailLabel}>Current commit hash</Text>
-                <Text style={styles.hashText}>
-                  {shortenHash(currentRecord.commitHash)}
-                </Text>
-
-                <Text style={styles.detailLabel}>On-chain check</Text>
-                <Text style={styles.statusText}>
-                  {isCheckingOnchain
-                    ? "Checking..."
-                    : onchainLookup.status === "found"
-                      ? "On-chain"
-                      : onchainLookup.status === "not_found"
-                        ? "Not on-chain"
-                        : onchainLookup.status === "error"
-                          ? "Check failed"
-                          : "Waiting for check"}
-                </Text>
-                {onchainLookup.status === "not_found" ? (
-                  <Text style={styles.panelText}>
-                    This hash has not been recorded in the contract yet.
-                  </Text>
-                ) : null}
-
-                {onchainLookup.status === "found" ? (
-                  <Text style={styles.panelText}>
-                    This hash is already on-chain, and the full submission record will be shown on the right.
-                  </Text>
-                ) : null}
-
-                {onchainLookup.status === "error" ? (
-                  <Text style={styles.errorText}>{onchainLookup.message}</Text>
-                ) : null}
-              </View>
-
-              <Text style={styles.panelHint}>
-                Reminder: do not force push, resubmit after a revert, or rewrite history. If the hash changes, treat it as a new version.
-              </Text>
-            </View>
-
             <View style={styles.panel}>
               <Text style={styles.panelTitle}>On-chain submission</Text>
               {onchainLookup.status === "found" && onchainLookup.proof ? (
@@ -710,6 +679,7 @@ export default function Index() {
                     {onchainLookup.proof.submitter}
                   </Text>
 
+                  {/*
                   <Text style={styles.detailLabel}>On-chain repo</Text>
                   <Text style={styles.panelText}>
                     {onchainLookup.proof.repo || "Not provided"}
@@ -719,6 +689,7 @@ export default function Index() {
                   <Text style={styles.hashText}>
                     {onchainLookup.proof.treeHash}
                   </Text>
+                  */}
 
                   {!!txUrl ? (
                     <Pressable onPress={() => Linking.openURL(txUrl)}>
@@ -851,6 +822,65 @@ export default function Index() {
                 </>
               )}
             </View>
+
+            <View style={styles.panel}>
+              <Text style={styles.panelTitle}>Preview</Text>
+              <Text style={styles.panelText}>
+                The GitHub URL is for display only. The actual anchor that goes into the contract should be the commit hash.
+              </Text>
+
+              <View style={styles.detailBlock}>
+                <Text style={styles.detailLabel}>GitHub URL with hash</Text>
+                <Pressable onPress={() => Linking.openURL(currentRecord.treeUrl)}>
+                  <Text style={styles.linkText}>{currentRecord.treeUrl}</Text>
+                </Pressable>
+
+                <Text style={styles.detailLabel}>git clone command</Text>
+                <Text style={styles.codeBlock}>{currentRecord.cloneCommand}</Text>
+
+                <Text style={styles.detailLabel}>ZIP download link</Text>
+                <Pressable onPress={() => Linking.openURL(currentRecord.zipUrl)}>
+                  <Text style={styles.linkText}>{currentRecord.zipUrl}</Text>
+                </Pressable>
+
+                <Text style={styles.detailLabel}>Current commit hash</Text>
+                <Text style={styles.hashText}>
+                  {shortenHash(currentRecord.commitHash)}
+                </Text>
+
+                <Text style={styles.detailLabel}>On-chain check</Text>
+                <Text style={styles.statusText}>
+                  {isCheckingOnchain
+                    ? "Checking..."
+                    : onchainLookup.status === "found"
+                      ? "On-chain"
+                      : onchainLookup.status === "not_found"
+                        ? "Not on-chain"
+                        : onchainLookup.status === "error"
+                          ? "Check failed"
+                          : "Waiting for check"}
+                </Text>
+                {onchainLookup.status === "not_found" ? (
+                  <Text style={styles.panelText}>
+                    This hash has not been recorded in the contract yet.
+                  </Text>
+                ) : null}
+
+                {onchainLookup.status === "found" ? (
+                  <Text style={styles.panelText}>
+                    This hash is already on-chain, and the full submission record will be shown on the right.
+                  </Text>
+                ) : null}
+
+                {onchainLookup.status === "error" ? (
+                  <Text style={styles.errorText}>{onchainLookup.message}</Text>
+                ) : null}
+              </View>
+
+              <Text style={styles.panelHint}>
+                Reminder: do not force push, resubmit after a revert, or rewrite history. If the hash changes, treat it as a new version.
+              </Text>
+            </View>
           </View>
         ) : null}
 
@@ -929,6 +959,21 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  sampleButton: {
+    minHeight: 56,
+    borderRadius: 16,
+    backgroundColor: "#F9FAFB",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+  },
+  sampleButtonText: {
+    color: "#374151",
+    fontSize: 15,
+    fontWeight: "700",
   },
   buttonText: {
     color: "#FFFFFF",
