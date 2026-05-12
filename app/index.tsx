@@ -9,8 +9,10 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { monadTestnet } from "viem/chains";
+import { getAddress } from "viem";
 import {
   useAccount,
   useConnect,
@@ -83,6 +85,41 @@ const SAMPLE_REPO_URL =
   "https://github.com/NomicFoundation/solx";
 const SAMPLE_COMMIT_HASH =
   "f0f73f9e8bda8aaf6ead699672ac41167c42c490";
+type QueryParamValue = string | string[] | undefined;
+
+function firstQueryValue(value: QueryParamValue) {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return value ?? null;
+}
+
+function normalizeRepoQueryValue(input: string) {
+  const trimmed = input.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^github\.com\//i.test(trimmed)) {
+    return `https://${trimmed}`;
+  }
+
+  if (/^[^/]+\/[^/]+$/.test(trimmed)) {
+    return `https://github.com/${trimmed}`;
+  }
+
+  return trimmed;
+}
+
+function normalizeContractAddress(input: string) {
+  return getAddress(input.trim());
+}
 
 function normalizeGitHubRepoUrl(input: string): RepositoryParts {
   const trimmed = input.trim().replace(/\.git$/i, "");
@@ -162,6 +199,20 @@ function formatSubmittedAt(submittedAt: bigint) {
 }
 
 export default function Index() {
+  const searchParams = useLocalSearchParams<Record<string, QueryParamValue>>();
+  const queryRepo = firstQueryValue(
+    searchParams.repo ?? searchParams.repoUrl ?? searchParams.repository,
+  );
+  const queryHash = firstQueryValue(
+    searchParams.hash ?? searchParams.commitHash,
+  );
+  const queryContractAddress = firstQueryValue(
+    searchParams.contractAddress ??
+      searchParams.contract ??
+      searchParams.registryAddress ??
+      searchParams.address,
+  );
+
   const [repoUrlInput, setRepoUrlInput] = useState("");
   const [commitHashInput, setCommitHashInput] = useState("");
   const [currentRecord, setCurrentRecord] = useState<SubmissionRecord | null>(
@@ -171,6 +222,9 @@ export default function Index() {
     null,
   );
   const [isCheckingOnchain, setIsCheckingOnchain] = useState(false);
+  const [registryAddress, setRegistryAddress] = useState(
+    HACKSTAMP_REGISTRY_ADDRESS,
+  );
   const [onchainLookup, setOnchainLookup] = useState<OnchainLookupState>({
     status: "idle",
     proof: null,
@@ -234,6 +288,41 @@ export default function Index() {
       treeUrl: currentRecord.treeUrl,
     });
   }, [currentRecord]);
+
+  useEffect(() => {
+    setError(null);
+    setNotice(null);
+    setCurrentRecord(null);
+    setSubmittedHash(null);
+    setOnchainLookup({
+      status: "idle",
+      proof: null,
+      message: null,
+    });
+
+    if (queryRepo) {
+      setRepoUrlInput(normalizeRepoQueryValue(queryRepo));
+    } else {
+      setRepoUrlInput("");
+    }
+
+    if (queryHash) {
+      setCommitHashInput(queryHash.trim());
+    } else {
+      setCommitHashInput("");
+    }
+
+    if (queryContractAddress) {
+      try {
+        setRegistryAddress(normalizeContractAddress(queryContractAddress));
+      } catch {
+        setError("The contract address in the query string is invalid.");
+        setRegistryAddress(HACKSTAMP_REGISTRY_ADDRESS);
+      }
+    } else {
+      setRegistryAddress(HACKSTAMP_REGISTRY_ADDRESS);
+    }
+  }, [queryContractAddress, queryHash, queryRepo]);
 
   useEffect(() => {
     if (!submittedHash) {
@@ -336,7 +425,7 @@ export default function Index() {
     try {
       const exists = await publicClient.readContract({
         abi: HACKSTAMP_REGISTRY_ABI,
-        address: HACKSTAMP_REGISTRY_ADDRESS,
+        address: registryAddress,
         functionName: "exists",
         args: [normalizedCommitHash],
       });
@@ -358,7 +447,7 @@ export default function Index() {
 
       const proof = await publicClient.readContract({
         abi: HACKSTAMP_REGISTRY_ABI,
-        address: HACKSTAMP_REGISTRY_ADDRESS,
+        address: registryAddress,
         functionName: "getProofByCommit",
         args: [normalizedCommitHash],
       });
@@ -465,13 +554,13 @@ export default function Index() {
     try {
       // The deployed registry still expects tree/repo fields; commit hash is the only meaningful payload here.
       console.log("[HackStamp] sending contract write", {
-        address: HACKSTAMP_REGISTRY_ADDRESS,
+        address: registryAddress,
         commitHash: currentRecord.commitHash,
         repo: currentRecord.repoSlug,
       });
       const txHash = await writeContractAsync({
         abi: HACKSTAMP_REGISTRY_ABI,
-        address: HACKSTAMP_REGISTRY_ADDRESS,
+        address: registryAddress,
         functionName: "submitProof",
         args: [
           `0x${currentRecord.commitHash}` as `0x${string}`,
@@ -691,8 +780,8 @@ export default function Index() {
                 </View>
               ) : (
                 <>
-                  <Text style={styles.panelHint}>
-                    The contract address is fixed to the registry on Monad Testnet.
+                <Text style={styles.panelHint}>
+                    The contract address can be set via the query string or changed in code.
                   </Text>
 
                   <View style={styles.detailBlock}>
@@ -742,7 +831,7 @@ export default function Index() {
                     </View>
 
                     <Text style={styles.detailLabel}>Contract address</Text>
-                    <Text style={styles.hashText}>{HACKSTAMP_REGISTRY_ADDRESS}</Text>
+                    <Text style={styles.hashText}>{registryAddress}</Text>
 
                     <Text style={styles.detailLabel}>Submission payload</Text>
                     <Text style={styles.panelText}>
