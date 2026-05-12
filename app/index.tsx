@@ -84,7 +84,7 @@ function normalizeGitHubRepoUrl(input: string): RepositoryParts {
   const trimmed = input.trim().replace(/\.git$/i, "");
 
   if (!trimmed) {
-    throw new Error("请输入 GitHub 仓库 URL");
+    throw new Error("Please enter a GitHub repository URL");
   }
 
   const normalized = trimmed.match(/^https?:\/\//i)
@@ -95,12 +95,12 @@ function normalizeGitHubRepoUrl(input: string): RepositoryParts {
   const host = url.hostname.toLowerCase();
 
   if (host !== "github.com" && host !== "www.github.com") {
-    throw new Error("仓库 URL 必须是 GitHub URL");
+    throw new Error("The repository URL must be a GitHub URL");
   }
 
   const parts = url.pathname.split("/").filter(Boolean);
   if (parts.length !== 2) {
-    throw new Error("请填写 GitHub 仓库主页 URL，不要填写 tree/blob 页面");
+    throw new Error("Please enter the GitHub repository homepage URL, not a tree/blob page");
   }
 
   const owner = parts[0];
@@ -114,7 +114,7 @@ function normalizeCommitHash(input: string): string {
   const trimmed = input.trim().toLowerCase().replace(/^0x/, "");
 
   if (!/^[0-9a-f]{40}$/.test(trimmed)) {
-    throw new Error("commit hash 必须是 40 位 Git SHA1");
+    throw new Error("The commit hash must be a 40-character Git SHA1");
   }
 
   return trimmed;
@@ -160,7 +160,7 @@ function formatTxUrl(hash: string) {
 }
 
 function formatSubmittedAt(submittedAt: bigint) {
-  return new Date(Number(submittedAt) * 1000).toLocaleString("zh-CN", {
+  return new Date(Number(submittedAt) * 1000).toLocaleString("en-US", {
     hour12: false,
   });
 }
@@ -285,7 +285,7 @@ export default function Index() {
     } catch (repoError) {
       console.log("[HackStamp] repo validation failed", repoError);
       setError(
-        repoError instanceof Error ? repoError.message : "GitHub URL 无效",
+        repoError instanceof Error ? repoError.message : "Invalid GitHub URL",
       );
       return;
     }
@@ -295,7 +295,7 @@ export default function Index() {
     } catch (hashError) {
       console.log("[HackStamp] hash validation failed", hashError);
       setError(
-        hashError instanceof Error ? hashError.message : "commit hash 无效",
+        hashError instanceof Error ? hashError.message : "Invalid commit hash",
       );
       return;
     }
@@ -305,7 +305,7 @@ export default function Index() {
     setCurrentRecord(nextRecord);
 
     if (!publicClient) {
-      setError("当前环境没有可用的 RPC 客户端，无法检查链上记录。");
+      setError("No RPC client is available in the current environment, so on-chain records cannot be checked.");
       return;
     }
 
@@ -314,9 +314,9 @@ export default function Index() {
     setOnchainLookup({
       status: "checking",
       proof: null,
-      message: "正在检查链上是否已经存在这个 commit hash。",
+      message: "Checking whether this commit hash already exists on-chain.",
     });
-    setNotice("已生成展示链接，正在检查链上记录。");
+    setNotice("Preview link generated. Checking on-chain records.");
 
     console.log("[HackStamp] onchain lookup started", {
       commitHash: normalizedCommitHash,
@@ -340,9 +340,9 @@ export default function Index() {
         setOnchainLookup({
           status: "not_found",
           proof: null,
-          message: "这个 hash 还没有上链。",
+          message: "This hash has not been submitted on-chain yet.",
         });
-        setNotice("已生成展示链接，这个 hash 目前还没有上链。");
+        setNotice("Preview link generated. This hash is not on-chain yet.");
         return;
       }
 
@@ -371,9 +371,9 @@ export default function Index() {
       setOnchainLookup({
         status: "found",
         proof: normalizedProof,
-        message: "这个 hash 已经上链。",
+        message: "This hash is already on-chain.",
       });
-      setNotice("已生成展示链接，这个 hash 已经在链上登记。");
+      setNotice("Preview link generated. This hash is already registered on-chain.");
     } catch (lookupError) {
       console.log("[HackStamp] onchain lookup failed", lookupError);
       setOnchainLookup({
@@ -382,9 +382,9 @@ export default function Index() {
         message:
           lookupError instanceof Error
             ? lookupError.message
-            : "链上查询失败",
+            : "On-chain query failed",
       });
-      setNotice("已生成展示链接，但链上检查失败。");
+      setNotice("Preview link generated, but the on-chain check failed.");
     } finally {
       setIsCheckingOnchain(false);
     }
@@ -399,12 +399,12 @@ export default function Index() {
     });
 
     if (!canUseInjectedWallet) {
-      setError("当前版本只支持 web 浏览器钱包。");
+      setError("This version only supports web browser wallets.");
       return;
     }
 
     if (!connectConnector) {
-      setError("未找到可用的钱包扩展。请安装 MetaMask 或类似浏览器钱包。");
+      setError("No wallet extension was found. Install MetaMask or a similar browser wallet.");
       return;
     }
 
@@ -438,17 +438,17 @@ export default function Index() {
     });
 
     if (!currentRecord) {
-      setError("请先生成 commit hash 预览。");
+      setError("Generate the commit hash preview first.");
       return;
     }
 
     if (!isConnected || !address) {
-      setError("请先连接钱包。");
+      setError("Connect your wallet first.");
       return;
     }
 
     if (!isOnMonadTestnet) {
-      setError("请先切换到 Monad Testnet。");
+      setError("Switch to Monad Testnet first.");
       return;
     }
 
@@ -475,36 +475,36 @@ export default function Index() {
         txUrl: formatTxUrl(txHash),
       });
       setSubmittedHash(txHash);
-      setNotice("交易已发送，等待链上确认。");
+      setNotice("Transaction sent. Waiting for on-chain confirmation.");
     } catch (submitError) {
       console.log("[HackStamp] submit failed", submitError);
       setError(
-        submitError instanceof Error ? submitError.message : "提交交易失败",
+        submitError instanceof Error ? submitError.message : "Transaction submission failed",
       );
     }
   }
 
   const statusLabel = isConnected
-    ? `${shortenAddress(address ?? "")} · ${isOnMonadTestnet ? "Monad Testnet" : "错误网络"}`
-    : "未连接钱包";
+    ? `${shortenAddress(address ?? "")} · ${isOnMonadTestnet ? "Monad Testnet" : "Wrong network"}`
+    : "Wallet not connected";
 
   const panelStatus = receipt
     ? receipt.status === "success"
-      ? "已确认"
-      : "交易失败"
+      ? "Confirmed"
+      : "Transaction failed"
     : submittedHash
       ? isWaitingForReceipt
-        ? "等待确认"
-        : "已发送"
-      : "未提交";
+        ? "Awaiting confirmation"
+        : "Sent"
+      : "Not submitted";
 
   const submitButtonLabel = isSubmitting
-    ? "等待钱包确认..."
+    ? "Waiting for wallet confirmation..."
     : submittedHash && isWaitingForReceipt
-      ? "已发送，等待确认..."
+      ? "Sent, waiting for confirmation..."
       : receipt?.status === "success"
-        ? "已确认"
-        : "提交上链";
+        ? "Confirmed"
+        : "Submit on-chain";
 
   const submitDisabled =
     !currentRecord ||
@@ -526,17 +526,17 @@ export default function Index() {
   const submitBlockerMessages = submitBlockers.map((blocker) => {
     switch (blocker) {
       case "no_preview":
-        return "还没有生成 commit 预览";
+        return "No commit preview has been generated yet";
       case "wallet_disconnected":
-        return "钱包未连接";
+        return "Wallet is disconnected";
       case "wrong_chain":
-        return "当前网络不是 Monad Testnet";
+        return "Current network is not Monad Testnet";
       case "wallet_confirming":
-        return "钱包正在确认交易";
+        return "Wallet is confirming the transaction";
       case "waiting_receipt":
-        return "交易已发送，正在等待链上回执";
+        return "Transaction sent, waiting for on-chain receipt";
       case "already_confirmed":
-        return "该提交已经确认，如需重新上链请修改 commit hash";
+        return "This submission is already confirmed. Change the commit hash to submit again";
       default:
         return blocker;
     }
@@ -590,9 +590,9 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text style={styles.title}>黑客松项目提交证明</Text>
+          <Text style={styles.title}>Hackathon Submission Proof</Text>
           <Text style={styles.subtitle}>
-            证明你在截止时间前完成了项目
+            Prove your project was completed before the deadline
           </Text>
         </View>
 
@@ -600,7 +600,7 @@ export default function Index() {
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="GitHub repo URL，例如 https://github.com/NomicFoundation/solx"
+            placeholder="GitHub repo URL, e.g. https://github.com/NomicFoundation/solx"
             placeholderTextColor="#9CA3AF"
             style={styles.input}
             value={repoUrlInput}
@@ -610,7 +610,7 @@ export default function Index() {
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
-            placeholder="commit hash，例如 f0f73f9e8bda8aaf6ead699672ac41167c42c490"
+            placeholder="Commit hash, e.g. f0f73f9e8bda8aaf6ead699672ac41167c42c490"
             placeholderTextColor="#9CA3AF"
             style={styles.input}
             value={commitHashInput}
@@ -623,8 +623,8 @@ export default function Index() {
               pressed && styles.pressed,
             ]}
             onPress={handleGenerate}
-          >
-            <Text style={styles.buttonText}>验证 hash / 生成链接</Text>
+            >
+            <Text style={styles.buttonText}>Validate hash / Generate link</Text>
           </Pressable>
 
           {!!error && <Text style={styles.errorText}>{error}</Text>}
@@ -634,51 +634,51 @@ export default function Index() {
         {currentRecord ? (
           <View style={styles.resultGrid}>
             <View style={styles.panel}>
-              <Text style={styles.panelTitle}>展示结果</Text>
+              <Text style={styles.panelTitle}>Preview</Text>
               <Text style={styles.panelText}>
-                GitHub URL 只用于展示。真正后续进入合约的锚点，只应该是 commit hash。
+                The GitHub URL is for display only. The actual anchor that goes into the contract should be the commit hash.
               </Text>
 
               <View style={styles.detailBlock}>
-                <Text style={styles.detailLabel}>带 hash 的 GitHub URL</Text>
+                <Text style={styles.detailLabel}>GitHub URL with hash</Text>
                 <Pressable onPress={() => Linking.openURL(currentRecord.treeUrl)}>
                   <Text style={styles.linkText}>{currentRecord.treeUrl}</Text>
                 </Pressable>
 
-                <Text style={styles.detailLabel}>git clone 命令</Text>
+                <Text style={styles.detailLabel}>git clone command</Text>
                 <Text style={styles.codeBlock}>{currentRecord.cloneCommand}</Text>
 
-                <Text style={styles.detailLabel}>zip 下载链接</Text>
+                <Text style={styles.detailLabel}>ZIP download link</Text>
                 <Pressable onPress={() => Linking.openURL(currentRecord.zipUrl)}>
                   <Text style={styles.linkText}>{currentRecord.zipUrl}</Text>
                 </Pressable>
 
-                <Text style={styles.detailLabel}>当前 commit hash</Text>
+                <Text style={styles.detailLabel}>Current commit hash</Text>
                 <Text style={styles.hashText}>
                   {shortenHash(currentRecord.commitHash)}
                 </Text>
 
-                <Text style={styles.detailLabel}>链上检查</Text>
+                <Text style={styles.detailLabel}>On-chain check</Text>
                 <Text style={styles.statusText}>
                   {isCheckingOnchain
-                    ? "正在检查..."
+                    ? "Checking..."
                     : onchainLookup.status === "found"
-                      ? "已上链"
+                      ? "On-chain"
                       : onchainLookup.status === "not_found"
-                        ? "未上链"
+                        ? "Not on-chain"
                         : onchainLookup.status === "error"
-                          ? "检查失败"
-                          : "等待检查"}
+                          ? "Check failed"
+                          : "Waiting for check"}
                 </Text>
                 {onchainLookup.status === "not_found" ? (
                   <Text style={styles.panelText}>
-                    这个 hash 还没有在合约里登记。
+                    This hash has not been recorded in the contract yet.
                   </Text>
                 ) : null}
 
                 {onchainLookup.status === "found" ? (
                   <Text style={styles.panelText}>
-                    这个 hash 已经上链，右侧会直接展示完整提交记录。
+                    This hash is already on-chain, and the full submission record will be shown on the right.
                   </Text>
                 ) : null}
 
@@ -688,31 +688,31 @@ export default function Index() {
               </View>
 
               <Text style={styles.panelHint}>
-                提醒：不要 force push、revert 后重提或 rewrite history。hash 一变，就应该视为新版本。
+                Reminder: do not force push, resubmit after a revert, or rewrite history. If the hash changes, treat it as a new version.
               </Text>
             </View>
 
             <View style={styles.panel}>
-              <Text style={styles.panelTitle}>链上提交</Text>
+              <Text style={styles.panelTitle}>On-chain submission</Text>
               {onchainLookup.status === "found" && onchainLookup.proof ? (
                 <View style={styles.detailBlock}>
                   <Text style={styles.panelHint}>
-                    当前 commit hash 已经在链上登记。下面直接展示提交记录，不再提供提交按钮。
+                    This commit hash is already recorded on-chain. The submission record is shown below, and the submit button is hidden.
                   </Text>
 
-                  <Text style={styles.detailLabel}>提交时间</Text>
+                  <Text style={styles.detailLabel}>Submission time</Text>
                   <Text style={styles.panelText}>
                     {formatSubmittedAt(onchainLookup.proof.submittedAt)}
                   </Text>
 
-                  <Text style={styles.detailLabel}>提交者</Text>
+                  <Text style={styles.detailLabel}>Submitter</Text>
                   <Text style={styles.hashText}>
                     {onchainLookup.proof.submitter}
                   </Text>
 
-                  <Text style={styles.detailLabel}>链上 repo</Text>
+                  <Text style={styles.detailLabel}>On-chain repo</Text>
                   <Text style={styles.panelText}>
-                    {onchainLookup.proof.repo || "未填写"}
+                    {onchainLookup.proof.repo || "Not provided"}
                   </Text>
 
                   <Text style={styles.detailLabel}>treeHash</Text>
@@ -729,11 +729,11 @@ export default function Index() {
               ) : (
                 <>
                   <Text style={styles.panelHint}>
-                    当前合约地址已固定为 Monad Testnet 上的 registry。
+                    The contract address is fixed to the registry on Monad Testnet.
                   </Text>
 
                   <View style={styles.detailBlock}>
-                    <Text style={styles.detailLabel}>钱包状态</Text>
+                    <Text style={styles.detailLabel}>Wallet status</Text>
                     <Text style={styles.statusText}>{statusLabel}</Text>
 
                     <View style={styles.inlineRow}>
@@ -747,7 +747,7 @@ export default function Index() {
                           onPress={handleConnectWallet}
                         >
                           <Text style={styles.secondaryButtonText}>
-                            {isConnecting ? "连接中..." : "连接钱包"}
+                            {isConnecting ? "Connecting..." : "Connect wallet"}
                           </Text>
                         </Pressable>
                       ) : (
@@ -758,7 +758,7 @@ export default function Index() {
                           ]}
                           onPress={() => disconnect()}
                         >
-                          <Text style={styles.secondaryButtonText}>断开钱包</Text>
+                          <Text style={styles.secondaryButtonText}>Disconnect wallet</Text>
                         </Pressable>
                       )}
 
@@ -772,18 +772,18 @@ export default function Index() {
                           onPress={handleSwitchChain}
                         >
                           <Text style={styles.secondaryButtonText}>
-                            {isSwitchingChain ? "切换中..." : "切到 Monad Testnet"}
+                            {isSwitchingChain ? "Switching..." : "Switch to Monad Testnet"}
                           </Text>
                         </Pressable>
                       ) : null}
                     </View>
 
-                    <Text style={styles.detailLabel}>合约地址</Text>
+                    <Text style={styles.detailLabel}>Contract address</Text>
                     <Text style={styles.hashText}>{HACKSTAMP_REGISTRY_ADDRESS}</Text>
 
-                    <Text style={styles.detailLabel}>提交内容</Text>
+                    <Text style={styles.detailLabel}>Submission payload</Text>
                     <Text style={styles.panelText}>
-                      只提交 commit hash。repo URL 只用于展示，不进入链上参数。
+                      Only the commit hash is submitted. The repo URL is display-only and is not included in the on-chain parameters.
                     </Text>
 
                     <Pressable
@@ -797,14 +797,14 @@ export default function Index() {
                     >
                       <Text style={styles.buttonText}>
                         {isCheckingOnchain
-                          ? "检查中..."
+                          ? "Checking..."
                           : submitButtonLabel}
                       </Text>
                     </Pressable>
 
                     {submitDisabled && submitBlockerSummary ? (
                       <Text style={styles.blockerText}>
-                        当前不可提交：{submitBlockerSummary}
+                        Current submission blocked: {submitBlockerSummary}
                       </Text>
                     ) : null}
 
@@ -814,20 +814,20 @@ export default function Index() {
                       </Pressable>
                     )}
 
-                    <Text style={styles.detailLabel}>交易状态</Text>
+                    <Text style={styles.detailLabel}>Transaction status</Text>
                     <Text style={styles.statusText}>{panelStatus}</Text>
 
                     {!!receipt && (
                       <Text style={styles.panelText}>
                         {receipt.status === "success"
-                          ? "交易已确认。"
-                          : "交易回执显示失败。"}
+                          ? "Transaction confirmed."
+                          : "Transaction receipt indicates failure."}
                       </Text>
                     )}
 
                     {!!submittedHash && !receipt && (
                       <Text style={styles.panelText}>
-                        已拿到 tx hash，正在查询链上回执。
+                        Got the tx hash, now querying the on-chain receipt.
                       </Text>
                     )}
 
@@ -856,9 +856,9 @@ export default function Index() {
 
         {!canUseInjectedWallet ? (
           <View style={styles.panel}>
-            <Text style={styles.panelTitle}>当前环境</Text>
+            <Text style={styles.panelTitle}>Current environment</Text>
             <Text style={styles.panelText}>
-              浏览器钱包连接只在 web 版本可用。移动端如果要继续做，之后再单独接钱包方案。
+              Browser wallet connections are only available in the web version. If mobile support is added later, it should use a separate wallet integration.
             </Text>
           </View>
         ) : null}
