@@ -12,7 +12,7 @@
     "scheme": "hackstamp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "githubUrl": "https://github.com/monad-developers/react-native-privy-embedded-wallet-template",
+    "githubUrl": "https://github.com/am009/monad-git-repo-exist-proof",
     "ios": {
       "bundleIdentifier": "com.anonymous.hackstamp",
       "icon": "./assets/images/icon.png",

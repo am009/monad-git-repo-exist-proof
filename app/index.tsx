@@ -85,6 +85,10 @@ const SAMPLE_REPO_URL =
   "https://github.com/NomicFoundation/solx";
 const SAMPLE_COMMIT_HASH =
   "f0f73f9e8bda8aaf6ead699672ac41167c42c490";
+const PUBLIC_REPO_URL =
+  "https://github.com/am009/monad-git-repo-exist-proof";
+const OKX_SKILL_NOTE =
+  "plugin-store skill installed with npx skills add okx/plugin-store --skill plugin-store";
 type QueryParamValue = string | string[] | undefined;
 
 function firstQueryValue(value: QueryParamValue) {
@@ -693,6 +697,23 @@ export default function Index() {
           <Text style={styles.subtitle}>
             Prove your project was completed before the deadline
           </Text>
+        </View>
+
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>Submission details</Text>
+          <Text style={styles.panelText}>
+            This build is prepared for the XAgent hackathon builder track.
+          </Text>
+
+          <View style={styles.detailBlock}>
+            <Text style={styles.detailLabel}>Public repository</Text>
+            <Pressable onPress={() => Linking.openURL(PUBLIC_REPO_URL)}>
+              <Text style={styles.linkText}>{PUBLIC_REPO_URL}</Text>
+            </Pressable>
+
+            <Text style={styles.detailLabel}>OKX skill suite</Text>
+            <Text style={styles.panelText}>{OKX_SKILL_NOTE}</Text>
+          </View>
         </View>
 
         <View style={styles.form}>

@@ -1,5 +1,7 @@
 # HackStamp
 
+HackStamp is a Monad testnet app that anchors Git commit hashes on-chain to prove a repository existed before a deadline.
+
 [Intro video](./video/Intro.mp4)
 
 黑客松活动，在项目提交时，有的队伍可能会在截止时间后依然去偷偷修改项目的内容
@@ -9,6 +11,12 @@
 难道说黑客松就必须让每个队伍提交项目压缩包了吗？这对服务器的要求也很高。不，只需要提交项目的commit哈希即可！
 
 本项目创建了一个简单的合约，将相关的哈希上链，这样可以证明项目已经完成。后续如果git历史被篡改，会让访问指定哈希状态的链接返回404！
+
+## Submission notes
+
+- Public repository: https://github.com/am009/monad-git-repo-exist-proof
+- OKX skill suite touchpoint: installed the `plugin-store` skill with `npx skills add okx/plugin-store --skill plugin-store`
+- Main proof flow: enter a GitHub repo URL and commit hash, then anchor the hash on-chain
 
 ### Install dependencies
 

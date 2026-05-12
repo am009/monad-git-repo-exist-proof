@@ -48,3 +48,8 @@ ios/
 contracts/out/
 contracts/cache/
 contracts/broadcast/
+
+# Local Codex / Cursor skill artifacts
+.cursor/
+.cursor-plugin/
+skills/
