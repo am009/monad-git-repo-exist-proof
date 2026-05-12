@@ -53,6 +53,7 @@
       "expo-web-browser"
     ],
     "experiments": {
+      "baseUrl": "/monad-git-repo-exist-proof",
       "typedRoutes": true
     }
   }
