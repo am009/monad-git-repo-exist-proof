@@ -143,14 +143,6 @@ function buildSubmissionRecord(
   };
 }
 
-function shortenHash(hash: string, prefixLength = 8, suffixLength = 6) {
-  if (hash.length <= prefixLength + suffixLength) {
-    return hash;
-  }
-
-  return `${hash.slice(0, prefixLength)}…${hash.slice(-suffixLength)}`;
-}
-
 function shortenAddress(address: string, prefixLength = 6, suffixLength = 4) {
   if (address.length <= prefixLength + suffixLength) {
     return address;
@@ -826,7 +818,19 @@ export default function Index() {
             <View style={styles.panel}>
               <Text style={styles.panelTitle}>Preview</Text>
               <Text style={styles.panelText}>
-                The GitHub URL is for display only. The actual anchor that goes into the contract should be the commit hash.
+                {onchainLookup.status === "found" ? (
+                  <>
+                    The following GitHub URL{" "}
+                    <Text style={styles.inlineStrong}>is</Text> proved
+                    completed before the specific time.
+                  </>
+                ) : (
+                  <>
+                    The following GitHub URL{" "}
+                    <Text style={styles.inlineStrong}>will be</Text> proved
+                    completed now.
+                  </>
+                )}
               </Text>
 
               <View style={styles.detailBlock}>
@@ -843,10 +847,8 @@ export default function Index() {
                   <Text style={styles.linkText}>{currentRecord.zipUrl}</Text>
                 </Pressable>
 
-                <Text style={styles.detailLabel}>Current commit hash</Text>
-                <Text style={styles.hashText}>
-                  {shortenHash(currentRecord.commitHash)}
-                </Text>
+                {/* <Text style={styles.detailLabel}>Current commit hash</Text>
+                <Text style={styles.hashText}>{currentRecord.commitHash}</Text> */}
 
                 <Text style={styles.detailLabel}>On-chain check</Text>
                 <Text style={styles.statusText}>
@@ -878,7 +880,7 @@ export default function Index() {
               </View>
 
               <Text style={styles.panelHint}>
-                Reminder: do not force push, resubmit after a revert, or rewrite history. If the hash changes, treat it as a new version.
+                Reminder: do not force push, resubmit after a revert, or rewrite history. If the hash changes, your previous proof will be invalid!
               </Text>
             </View>
           </View>
@@ -1035,6 +1037,10 @@ const styles = StyleSheet.create({
     color: "#374151",
     fontSize: 14,
     lineHeight: 22,
+  },
+  inlineStrong: {
+    color: "#111827",
+    fontWeight: "700",
   },
   panelHint: {
     color: "#6B7280",
