@@ -53,3 +53,6 @@ contracts/broadcast/
 .cursor/
 .cursor-plugin/
 skills/
+
+# xagt-plugin generated submission file
+submission-*.md
