@@ -2,6 +2,14 @@
 
 HackStamp is a Monad testnet app that anchors Git commit hashes on-chain to prove a repository existed before a deadline.
 
+During hackathon submissions, some teams may continue making secret changes to the project after the deadline.
+
+Some people might say you can simply ignore commits after the deadline, but Git history can also be tampered with, making it possible to fake an earlier submission.
+
+Does that mean every team has to submit a project archive? That would also place a heavy burden on the server. No - all you need to submit is the project's commit hash.
+
+This project creates a simple contract that anchors the relevant hash on-chain, proving the project was completed. If the Git history is later tampered with, links to that specific hash state will return 404!
+
 [Intro video](./video/Intro.mp4)
 
 黑客松活动，在项目提交时，有的队伍可能会在截止时间后依然去偷偷修改项目的内容
