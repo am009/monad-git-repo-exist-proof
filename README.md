@@ -1,39 +1,14 @@
 # HackStamp
 
-HackStamp is a React app built with Expo, Monad testnet, and browser wallet support.
+[Intro video](./video/Intro.mp4)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+黑客松活动，在项目提交时，有的队伍可能会在截止时间后依然去偷偷修改项目的内容
 
-> [!NOTE]
-> This repo also has a `demo` branch that you can switch to in order to view the demo project.
+有的人会说，根据项目的截止时间，排除掉后面的提交就可以了，但是，git的历史也是可以被篡改的，可以假装自己的截止之前提交的！
 
-## Prerequisites
+难道说黑客松就必须让每个队伍提交项目压缩包了吗？这对服务器的要求也很高。不，只需要提交项目的commit哈希即可！
 
-- Node.js
-- NPM
-- Expo CLI (Install using the following command: `npm i -g expo-cli`)
-- A browser wallet such as MetaMask or Rabby
-
-For Android:
-- [Android Studio](https://developer.android.com/studio) (API version 35 and above)
-  - Guide to setup Android Studio for Expo is available [here](https://docs.expo.dev/workflow/android-studio-emulator/)
-
-For iOS:
-- [XCode](https://apps.apple.com/in/app/xcode/id497799835?mt=12)
-  - Guide to setup iOS Simulator for Expo is available [here](https://docs.expo.dev/workflow/ios-simulator/)
-
-
-### Wallet setup
-
-The current web flow uses an injected browser wallet. No Privy dashboard setup or auth environment variables are required.
-
-## Get started
-
-> [!NOTE]
-> This repo also has a `demo` branch that you can switch to in order to view the demo project.
-> ```
-> git checkout demo
-> ```
+本项目创建了一个简单的合约，将相关的哈希上链，这样可以证明项目已经完成。后续如果git历史被篡改，会让访问指定哈希状态的链接返回404！
 
 ### Install dependencies
 
@@ -44,36 +19,6 @@ npm install
 ### Set up the environment variables
 
 No environment variables are required for the current web wallet flow.
-
-### Start the app
-
-The below commands will start the app in Expo Go app on respective devices.
-
-For iOS:
-
-```bash
-npm run ios
-```
-
-For Android:
-
-```bash
-npm run android
-```
-
-For native app builds use the following commands:
-
-For iOS:
-
-```bash
-npx expo run:ios
-```
-
-For Android:
-
-```bash
-npx expo run:android
-```
 
 ## Folder structure of the template
 
